@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
 import pandas as pd
 import numpy as np
-import plotly as py
 
 
 
