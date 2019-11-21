@@ -9,10 +9,19 @@
             <label>Y List:</label>
             <input  class="form-control" id="form-listY" v-model="listas.listaY">
         </div>
+        <div class="form-group">
+              <label class="text-reader">
+                Read File
+                <input type="file" @change="loadListsFromFile">
+              </label>
+        </div>
         <button type="submit" class="btn btn-primary" variant="primary">Submit</button>    
     </form>
     <label>F(X):<pre>{{funcion}}</pre></label>
-    <div class="w-100 p-3" style="height: 500px;" id="myDiv"></div>
+    <br>
+    <label>Relative Error:<pre>{{errorRelativo}}</pre></label>
+    <br>
+    <div class="w-100 p-3" style="height: 500px;" id="lienzo"></div>
   </div>
 </template>
 
@@ -26,11 +35,10 @@ export default {
         puntosUsuario: null,
         puntosFuncion: null,
         funcion: null,
-        exponentes: null,
-        funcion_sin_exponentes: null,
+        errorRelativo: 0.0,
         listas: { 
-          listaX: '',
-          listaY: '',
+          listaX: "",
+          listaY: "",
         }
     };
   },
@@ -39,9 +47,11 @@ export default {
       const path = 'http://localhost:5000/grafica';
       axios.get(path)
         .then((res) => {
+          console.log(res.data)
           this.puntosUsuario = res.data.puntosUsuario;
           this.puntosFuncion = res.data.puntosFuncion;
           this.funcion = res.data.funcion
+          this.errorRelativo =res.data.errorRelativo
           this.renderGrafica(this.puntosUsuario,this.puntosFuncion,this.funcion);
         })
         .catch((error) => {
@@ -56,7 +66,6 @@ export default {
         })
         .catch((error) => {
           console.log(error);
-          this.getGrafica();
         });
     },
     onSubmit(evt) {
@@ -68,14 +77,6 @@ export default {
       this.enviarListas(payload);
     },
     renderGrafica(userpoints,funcpoints,funcion) {
-      if(funcion.includes('\n')){
-        this.exponentes = funcion.split('\n')[0]
-        this.funcion_sin_exponentes = funcion.split('\n')[1]
-      }
-      else 
-      {
-        this.funcion_sin_exponentes = funcion
-      }
       
       //coordenadas del usuaio
       var uxcoord = [];
@@ -110,11 +111,35 @@ export default {
 
       var data = [user_line,func_line];
       
-      Plotly.newPlot('myDiv', data, {responsive: true});
+      Plotly.newPlot('lienzo', data, {responsive: true});
     },
-  },
-  created() {
-    this.getGrafica();
+    loadListsFromFile(ev) {
+      const userfile = ev.target.files[0];
+
+      function readFile(file){
+        return new Promise((resolve,reject) => {
+          let reader = new FileReader()
+          reader.onload = function(){
+            resolve(this.result)
+          }
+          reader.readAsText(file)
+        })
+      }
+
+      readFile(userfile).then(data => {
+        const records = data.split('\n')
+        var aux = "";  //auxiliar ayudara guardar el arreglo del split
+        var x = "";
+        var y = "";
+        records.forEach(element => {
+          aux = element.split(',');
+          x += aux[0]+',';
+          y += aux[1]+',';
+        });
+        this.listas.listaX = x.slice(0,-1);
+        this.listas.listaY = y.slice(0,-1);
+      });
+    },
   },
 };
 </script>

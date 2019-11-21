@@ -1,18 +1,20 @@
-<template>
-  <div class="container">
-    <div class="row">
-      <div class="col-sm-10">
-        <h1>Books</h1>
-        <hr><br><br>
-        <button type="submit" class="btn btn-success btn-sm">Graficar</button>
-        <br><br>
-        <input class="input" type="text" v-model="listForm.listX">
-        <label>List X</label>
-
-        <input class="input" type="text" v-model="listForm.listY">
-        <label>List Y</label>
-      </div>
-    </div>
-  </div>
-</template>
-url -X POST http://localhost:5000/grafica -d "{\"listaX\": \"1,2,3,4\", \"listaY\": \"5,6,7,8\"}" -H 'Content-Type:application/json'
+-10,100
+-9,81
+-8,64
+-7,49
+-6,36
+-5,25
+-4,16
+-3,9
+-2,4
+-1,1
+1,1
+2,4
+3,9
+4,16
+5,25
+6,36
+7,49
+8,64
+9,81
+10,100
