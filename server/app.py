@@ -4,15 +4,10 @@ from random import randrange
 import pandas as pd
 import numpy as np
 import math 
-
-
-
-# configuration
-DEBUG = True
+import psycopg2
 
 # instantiate the app
 app = Flask(__name__)
-#app.config.from_object(__name__) //causa error CORS
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 # enable CORS
@@ -24,6 +19,39 @@ PUNTOS_FUNCION = pd.DataFrame()
 FUNCION = ""
 ERROR_RELATIVO = 0.0
 # sanity check route
+# login route
+@app.route('/authentication', methods=['POST'])
+@cross_origin()
+def authenticateUser():
+    # get request
+    post_data = request.get_json(force=True)
+    username = post_data['username']
+    password = post_data['password']
+    response_object = {'status':'success'}
+    if (searchUser(username,password)):
+        response_object['login'] = 'success'
+    else:
+        response_object['login'] = 'fail'
+    
+    return jsonify(response_object)
+    
+def searchUser(username,password):
+    # instantiate  Database
+    db = "dbname='VuejsLogin' user='postgres' host='localhost' password='oracle'"
+    try:
+        conn = psycopg2.connect(db)
+        cursor = conn.cursor()
+    except:
+        print ("Unable to connect to the database")
+        return False
+    # login logic
+    cursor.execute("""SELECT id FROM users WHERE username='{}' AND password='{}' """.format(username,password) )
+    rows = cursor.fetchall()
+    if (len(rows)>0):
+        return True 
+    return False
+    
+# chart route
 @app.route('/grafica', methods=['GET', 'POST'])
 @cross_origin()
 def all_grafica():
@@ -102,18 +130,12 @@ def mejor_Polinomio(polinomios,puntos_reales_x, puntos_reales_y):
         erroresRelativos = 0.0
         for i in range(0,len(puntos_reales_x)):
             # obtener el error absoluto
-            print('punto real: ',puntos_reales_y[i])
-            print('punto funcion: ',f(puntos_reales_x[i]))
-            print('error absoluto:',math.fabs(puntos_reales_y[i] - f(puntos_reales_x[i])))
             erroresAbsolutos += math.fabs(puntos_reales_y[i] - f(puntos_reales_x[i])) 
             try:
                 erroresRelativos += ((math.fabs(puntos_reales_y[i] - f(puntos_reales_x[i])))/math.fabs(puntos_reales_y[i]))*100
-                print('error relativo:',((math.fabs(puntos_reales_y[i] - f(puntos_reales_x[i])))/math.fabs(puntos_reales_y[i]))*100)
             except ZeroDivisionError:
                 pass
-        
-        print('Polinomio:',f)
-        print('error:',erroresAbsolutos)
+
         if (erroresAbsolutos < menorError) or (menorError < 0.0):
             menorError=erroresAbsolutos
             erroresRelativos = erroresRelativos/len(puntos_reales_x)
@@ -128,4 +150,4 @@ def get_rest_index(random_index, longitud_lista):
     return rest_index
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)

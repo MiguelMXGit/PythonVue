@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
-import Grafica from '../components/Grafica.vue';
+import LoginComponent from "../views/login.vue"
+import GraficaComponent from "../views/grafica.vue"
 
 Vue.use(VueRouter);
 
@@ -9,9 +10,20 @@ export default new VueRouter({
   base: process.env.BASE_URL,
   routes: [
     {
-      path: '/',
-      name: 'Grafica',
-      component: Grafica,
+        path: '/',
+        redirect: {
+            name: "login"
+        }
     },
+    {
+        path: "/login",
+        name: "login",
+        component: LoginComponent
+    },
+    {
+        path: "/grafica",
+        name: "grafica",
+        component: GraficaComponent
+    }
   ],
 });
